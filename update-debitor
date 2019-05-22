@@ -1,11 +1,8 @@
 #!/bin/bash
-# To update NightHawk (No harm to run more than once)
-# Author  : Samiux
-# Date    : JUL 20, 2017
-# Version : 0.1
-# License : GPLv3 (Open Source Software)
+# To update DebiTor (No harm to run more than once)
 
-echo "NightHawk is updating ...."
+
+echo "DebiTor is updating ...."
 sudo apt update
 sudo apt -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes -y dist-upgrade
 sudo apt -y autoclean
