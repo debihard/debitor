@@ -1,19 +1,16 @@
 #!/bin/bash
 
 # DebiTor Install script (No harm to run more than once)
-# Author  : Samiux
-# Date    : Oct 21, 2018
-# Version : 0.2
-# License : GPLv3 (Open Source Software)
+
 
 # include configure file
 . debitor.conf
 
-# Fix the Tor packages cannot be updated due to the gpg key is changed.
+ Fix the Tor packages cannot be updated due to the gpg key is changed.
 gpg --keyserver keys.gnupg.net --recv 886DDD89
 gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
 
-# add Tor respos
+ add Tor respos
 if [ -f /etc/apt/sources.list.d/tor.list ]
 then
   sudo rm /etc/apt/sources.list.d/tor.list
