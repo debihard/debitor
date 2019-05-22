@@ -1,19 +1,23 @@
 #!/bin/bash
 # To add user to the PPTP VPN (No harm to run more than once)
-# Author  : Samiux
-# Date    : JUL 20, 2017
-# Version : 0.1
-# License : GPLv3 (Open Source Software)
 
-echo "Username to be added, e.g. samiux, press <Enter> to quit :"
-read USER_NAME
+apt -y install pwgen
+apt -y install gpw
 
-echo "Password, use a very strong password for this VPN as it is not very secure :"
-read USER_PASSWORD
+#Automatic Adding VPN Users
+USER_NAME=$(gpw 1 8)
+USER_PASSWORD=$(pwgen 12 1)
+
+#echo "Username to be added, e.g. debihard, press <Enter> to quit :"
+#read USER_NAME
+
+#echo "Password, use a very strong password for this VPN as it is not very secure :"
+#read USER_PASSWORD
 
 if ( [[ ! -z "$USER_NAME" ]] ) && ( [[ ! -z "$USER_PASSWORD" ]] ); then
 	echo -e "$USER_NAME \x09 * \x09 $USER_PASSWORD \x09 *" >>  /etc/ppp/chap-secrets
-	echo "NightHawk VPN user is added!"
+	echo "DebiTor VPN user is added!"
+	echo "Save your connect - $USER_NAME : $USER_PASSWORD !"
 else
 	echo "One of the items is empty!  User not added!"
 fi
