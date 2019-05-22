@@ -2,6 +2,7 @@
 
 # DebiTor Install script (No harm to run more than once)
 
+apt -y install sudo
 
 # include configure file
 . debitor.conf
