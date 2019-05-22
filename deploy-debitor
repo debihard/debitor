@@ -1,0 +1,49 @@
+#!/bin/bash
+# To deploy DebiTor (No harm to run more than once)
+# Author  : Samiux
+# Date    : JUL 20, 2017
+# Version : 0.1
+# License : GPLv3 (Open Source Software)
+
+# include the configure file
+. /etc/debitor/conf.d/debitor.conf
+
+# local DNS
+echo "nameserver 127.0.0.1" > /etc/resolv.conf
+
+# iptables rules configuration
+# flash the iptables rules
+iptables -F
+iptables -t nat -F
+
+# ssh connection
+iptables -t nat -A PREROUTING -p tcp --dport 22 -m state --state NEW -m recent --set --name SSH -j ACCEPT
+
+# pptp connection
+iptables -t nat -A PREROUTING -p tcp --dport 1723 -m state --state NEW -m recent --set --name PPTP -j ACCEPT
+
+# iptables rules for Tor settings
+iptables -t nat -A OUTPUT -o lo -j RETURN
+iptables -t nat -A OUTPUT -m owner --uid-owner $TOR_UID -j RETURN
+iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT
+
+for NET in $NON_TOR ; do
+	iptables -t nat -A OUTPUT -d $NET -j RETURN
+	iptables -t nat -A PREROUTING -i $NETWORK_INF -d $NET -j RETURN
+done
+
+iptables -t nat -A OUTPUT -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT
+
+iptables -t nat -A PREROUTING -i $NETWORK_INF -p udp --dport 53 -j REDIRECT --to-port $DNS_PORT
+iptables -t nat -A PREROUTING -i $NETWORK_INF -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT
+
+iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+for NET in $NON_TOR 127.0.0.0/8; do
+	iptables -A OUTPUT -d $NET -j ACCEPT
+done
+
+iptables -A OUTPUT -m owner --uid-owner $TOR_UID -j ACCEPT
+iptables -A OUTPUT -j REJECT
+
+# end of file
