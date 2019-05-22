@@ -1,0 +1,53 @@
+#!/bin/bash
+# To setup the DebiTor (No harm to run more than once)
+# Author  : Samiux
+# Date    : Oct 21, 2018
+# Version : 0.2
+# License : GPLv3 (Open Source Software)
+
+. /etc/debitor/conf.d/debitor.conf
+
+# configure the configure files
+# delete all settings and then re-setting them up
+sudo sed -i "s/^localip.*/localip $LOCAL_IP/" /etc/pptpd.conf
+sudo sed -i "s/^remoteip.*/remoteip $REMOTE_IP/" /etc/pptpd.conf
+sudo sed -i "s/^listen.*/listen $LOCAL_IP/" /etc/pptpd.conf
+
+sudo sed -i "/^TransListenAddress/d" /etc/tor/torrc
+sudo sed -i "/^DNSListenAddress/d" /etc/tor/torrc
+sudo sed -i "/^MaxCircuitDirtiness/d" /etc/tor/torrc
+sudo sed -i "/^SOCKSListenAddress/d" /etc/tor/torrc
+sudo sed -i "/^TransPort/d" /etc/tor/torrc
+sudo sed -i "/^DNSPort/d" /etc/tor/torrc
+sudo sed -i "/^SOCKSPort/d" /etc/tor/torrc
+
+echo "TransListenAddress 127.0.0.1" | sudo tee -a /etc/tor/torrc
+echo "TransListenAddress $LOCAL_IP" | sudo tee -a /etc/tor/torrc
+echo "DNSListenAddress 127.0.0.1" | sudo tee -a /etc/tor/torrc
+echo "DNSListenAddress $LOCAL_IP" | sudo tee -a /etc/tor/torrc
+echo "SOCKSListenAddress 127.0.0.1" | sudo tee -a /etc/tor/torrc
+echo "SOCKSListenAddress $LOCAL_IP" | sudo tee -a /etc/tor/torrc
+
+echo "TransPort $TRANS_PORT" | sudo tee -a /etc/tor/torrc
+echo "TransPort $LOCAL_IP:$TRANS_PORT" | sudo tee -a /etc/tor/torrc
+echo "DNSPort $DNS_PORT" | sudo tee -a /etc/tor/torrc
+echo "TransPort $LOCAL_IP:$DNS_PORT" | sudo tee -a /etc/tor/torrc
+echo "SOCKSPort 9050" | sudo tee -a /etc/tor/torrc
+echo "SOCKSPort $LOCAL_IP:9050" | sudo tee -a /etc/tor/torrc
+
+# restart all services
+echo "Restarting Tor server ...."
+sudo systemctl restart tor
+
+echo "Restarting PPTP server ...."
+sudo systemctl daemon-reload
+sudo systemctl restart pptpd
+
+echo "Deploying DebiTor ...."
+sudo /usr/bin/deploy-debitor
+
+# setup is completed
+echo " "
+echo "DebiTor setup is completed!"
+
+# end of file
