@@ -1,0 +1,143 @@
+#!/bin/bash
+
+# DebiTor Install script (No harm to run more than once)
+# Author  : Samiux
+# Date    : Oct 21, 2018
+# Version : 0.2
+# License : GPLv3 (Open Source Software)
+
+# include configure file
+. debitor.conf
+
+# Fix the Tor packages cannot be updated due to the gpg key is changed.
+gpg --keyserver keys.gnupg.net --recv 886DDD89
+gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
+
+# add Tor respos
+if [ -f /etc/apt/sources.list.d/tor.list ]
+then
+  sudo rm /etc/apt/sources.list.d/tor.list
+else
+  sudo touch /etc/apt/sources.list.d/tor.list
+fi
+echo "deb http://deb.torproject.org/torproject.org $(lsb_release -cs) main" > /etc/apt/sources.list.d/tor.list
+sudo apt update
+
+# install Tor keyring
+sudo apt -y install deb.torproject.org-keyring
+sudo apt update
+
+# install Tor
+sudo apt -y install tor tor-geoipdb
+
+# install related applications
+sudo apt -y install pptpd elinks dnsmasq pptp-linux
+
+# configure PPTP
+sudo sed -i "/^localip/d" /etc/pptpd.conf
+sudo sed -i "/^remoteip/d" /etc/pptpd.conf
+echo "localip \$LOCAL_IP" | sudo tee -a /etc/pptpd.conf
+echo "remoteip \$REMOTE_IP" | sudo tee -a /etc/pptpd.conf
+
+# configure PPP
+sudo sed -i "/^TRANS_PORT/d" /etc/ppp/ip-down
+sudo sed -i "/^DNS_PORT/d" /etc/ppp/ip-down
+echo 'TRANS_PORT="9040"' | sudo tee -a /etc/ppp/ip-down
+echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-down
+
+sudo sed -i "/^iptables/d" /etc/ppp/ip-down
+echo "iptables -t nat -D PREROUTING -i \$PPP_IFACE -p udp --dport 53 -j REDIRECT --to-ports \$DNS_PORT" | sudo tee -a /etc/ppp/ip-down
+echo "iptables -t nat -D PREROUTING -i \$PPP_IFACE -p tcp --syn -j REDIRECT --to-ports \$TRANS_PORT" | sudo tee -a /etc/ppp/ip-down
+
+sudo sed -i "/^TRANS_PORT/d" /etc/ppp/ip-up
+sudo sed -i "/^DNS_PORT/d" /etc/ppp/ip-up
+echo 'TRANS_PORT="9040"' | sudo tee -a /etc/ppp/ip-up
+echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-up
+
+sudo sed -i "/^iptables/d" /etc/ppp/ip-up
+echo "iptables -t nat -A PREROUTING -i \$PPP_IFACE -p udp --dport 53 -j REDIRECT --to-ports \$DNS_PORT" | sudo tee -a /etc/ppp/ip-up
+echo "iptables -t nat -A PREROUTING -i \$PPP_IFACE -p tcp --syn -j REDIRECT --to-ports \$TRANS_PORT" | sudo tee -a /etc/ppp/ip-up
+
+# configure /etc/rc.local
+sed -i "/^\#\!.*/d" /etc/rc.local
+sed -i "/^exit.*/d" /etc/rc.local
+sed -i "/ /d" /etc/rc.local
+sed -i "/^\/usr\/bin\/deploy-debitor/d" /etc/rc.local
+echo "#!/bin/sh" | sudo tee -a /etc/rc.local
+echo " " | sudo tee -a /etc/rc.local
+echo "sudo /usr/bin/deploy-debitor" | sudo tee -a /etc/rc.local
+echo " " | sudo tee -a /etc/rc.local
+echo "exit 0" | sudo tee -a /etc/rc.local
+
+sudo chmod +x /etc/rc.local
+
+# configure /etc/tor/torrc
+# remove all settings and then re-setting them up
+sudo sed -i "/^RunAsDaemon/d" /etc/tor/torrc
+sudo sed -i "/^VirtualAddrNetwork/d" /etc/tor/torrc
+sudo sed -i "/^AutomapHostsOnResolve/d" /etc/tor/torrc
+sudo sed -i "/^AutomapHostsSuffixes/d" /etc/tor/torrc
+sudo sed -i "/^TransPort/d" /etc/tor/torrc
+sudo sed -i "/^DNSPort/d" /etc/tor/torrc
+sudo sed -i "/^ExcludeExitNodes/d" /etc/tor/torrc
+sudo sed -i "/^ExcludeNodes/d" /etc/tor/torrc
+sudo sed -i "/^FascistFirewall/d" /etc/tor/torrc
+sudo sed -i "/^SafeSocks/d" /etc/tor/torrc
+sudo sed -i "/^SOCKSPort/d" /etc/tor/torrc
+sudo sed -i "/^OptimisticData/d" /etc/tor/torrc
+sudo sed -i "/^BandwidthBurst/d" /etc/tor/torrc
+sudo sed -i "/^MaxCircuitDirtiness/d" /etc/tor/torrc
+
+echo "RunAsDaemon 1" | sudo tee -a /etc/tor/torrc
+echo "VirtualAddrNetwork 10.192.0.0/10" | sudo tee -a /etc/tor/torrc
+echo "AutomapHostsOnResolve 1" | sudo tee -a /etc/tor/torrc
+echo "AutomapHostsSuffixes .exit,.onion" | sudo tee -a /etc/tor/torrc
+echo "TransPort 9040" | sudo tee -a /etc/tor/torrc
+echo "DNSPort 53" | sudo tee -a /etc/tor/torrc
+echo "ExcludeExitNodes {CN},{RO},{TW},{US},{HK},{IR},{RU},{UK}" | sudo tee -a /etc/tor/torrc
+echo "ExcludeNodes {CN},{RO},{TW},{US},{HK},{IR},{RU},{UK}" | sudo tee -a /etc/tor/torrc
+echo "FascistFirewall 1" | sudo tee -a /etc/tor/torrc
+echo "SafeSocks 1" | sudo tee -a /etc/tor/torrc
+echo "SOCKSPort 9050" | sudo tee -a /etc/tor/torrc
+echo "OptimisticData 1" | sudo tee -a /etc/tor/torrc
+echo "BandwidthBurst 2 GBytes" | sudo tee -a /etc/tor/torrc
+echo "MaxCircuitDirtiness 600" | sudo tee -a /etc/tor/torrc
+
+# configure /etc/dnsmasq.conf
+sudo sed -i "s/#listen-address=.*/listen-address=127.0.0.1/" /etc/dnsmasq.conf
+sudo sed -i "s/#cache-size=150/cache-size=5000/" /etc/dnsmasq.conf
+
+# configure /etc/dhcp/dhclient.conf
+sudo sed -i "s/#prepend.*/prepend domain-name-servers 127.0.0.1;/" /etc/dhcp/dhclient.conf
+
+# restart the services
+sudo systemctl restart networking
+sudo systemctl restart dnsmasq
+sudo systemctl enable pptpd
+sudo systemctl daemon-reload
+sudo systemctl start pptpd
+
+# copy the scripts to /usr/bin/
+sudo chmod +x *-debitor
+sudo cp deploy-debitor /usr/bin/
+sudo cp deluser-debitor /usr/bin/
+sudo cp adduser-debitor /usr/bin/
+sudo cp setup-debitor /usr/bin/
+sudo cp update-debitor /usr/bin/
+sudo cp install-debitor /usr/bin/
+
+sudo mkdir -p /etc/debitor/conf.d/
+sudo cp debitor.conf /etc/debitor/conf.d/
+
+# solve "Temporary failure in name resolution" as desktop version is enabled
+sudo systemctl disable systemd-resolved
+sudo systemctl stop systemd-resolved
+
+echo
+echo "Install is completed, setting it up ..."
+sudo setup-debitor
+
+echo
+echo "Reboot your box ...."
+
+# end of file
