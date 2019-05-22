@@ -1,9 +1,5 @@
 #!/bin/bash
 # To deploy DebiTor (No harm to run more than once)
-# Author  : Samiux
-# Date    : JUL 20, 2017
-# Version : 0.1
-# License : GPLv3 (Open Source Software)
 
 # include the configure file
 . /etc/debitor/conf.d/debitor.conf
