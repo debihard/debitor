@@ -1,11 +1,8 @@
 #!/bin/bash
 # To delete PPTP VPN user (No harm to run more than once)
-# Author  : Samiux
-# Date    : JUL 20, 2017
-# Version : 0.1
-# License : GPLv3 (Open Source Software)
 
-echo "Username to be deleted, e.g. samiux, press <Enter> to quit :"
+
+echo "Username to be deleted, e.g. debihard, press <Enter> to quit :"
 read USER_NAME
 
 if ( [[ ! -z "$USER_NAME" ]] ) ; then
