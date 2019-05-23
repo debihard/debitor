@@ -3,6 +3,8 @@
 # DebiTor Install script (No harm to run more than once)
 
 apt -y install sudo
+apt -y install gpw
+apt -y install pwgen
 
 # include configure file
 . debitor.conf
