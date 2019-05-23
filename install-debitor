@@ -5,6 +5,7 @@
 apt -y install sudo
 apt -y install gpw
 apt -y install pwgen
+apt -y install dirmngr
 
 # include configure file
 . debitor.conf
