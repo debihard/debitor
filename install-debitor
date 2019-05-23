@@ -11,8 +11,11 @@ apt -y install dirmngr
 . debitor.conf
 
  Fix the Tor packages cannot be updated due to the gpg key is changed.
-gpg --keyserver keys.gnupg.net --recv 886DDD89
-gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
+#gpg --keyserver keys.gnupg.net --recv 886DDD89
+#gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
+
+wget https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc
+apt-key add <A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc
 
  add Tor respos
 if [ -f /etc/apt/sources.list.d/tor.list ]
@@ -37,8 +40,8 @@ sudo apt -y install pptpd elinks dnsmasq pptp-linux
 # configure PPTP
 sudo sed -i "/^localip/d" /etc/pptpd.conf
 sudo sed -i "/^remoteip/d" /etc/pptpd.conf
-echo "localip \$LOCAL_IP" | sudo tee -a /etc/pptpd.conf
-echo "remoteip \$REMOTE_IP" | sudo tee -a /etc/pptpd.conf
+echo "localip $LOCAL_IP" | sudo tee -a /etc/pptpd.conf
+echo "remoteip $REMOTE_IP" | sudo tee -a /etc/pptpd.conf
 
 # configure PPP
 sudo sed -i "/^TRANS_PORT/d" /etc/ppp/ip-down
