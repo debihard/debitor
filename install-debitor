@@ -50,8 +50,8 @@ echo 'TRANS_PORT="9040"' | sudo tee -a /etc/ppp/ip-down
 echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-down
 
 sudo sed -i "/^iptables/d" /etc/ppp/ip-down
-echo "iptables -t nat -D PREROUTING -i ppp+ -p udp --dport 53 -j REDIRECT --to-ports \$DNS_PORT" | sudo tee -a /etc/ppp/ip-down
-echo "iptables -t nat -D PREROUTING -i ppp+ -p tcp --syn -j REDIRECT --to-ports \$TRANS_PORT" | sudo tee -a /etc/ppp/ip-down
+echo "iptables -t nat -D PREROUTING -i ppp0 -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT" | sudo tee -a /etc/ppp/ip-down
+echo "iptables -t nat -D PREROUTING -i ppp0 -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-down
 
 sudo sed -i "/^TRANS_PORT/d" /etc/ppp/ip-up
 sudo sed -i "/^DNS_PORT/d" /etc/ppp/ip-up
@@ -59,8 +59,8 @@ echo 'TRANS_PORT="9040"' | sudo tee -a /etc/ppp/ip-up
 echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-up
 
 sudo sed -i "/^iptables/d" /etc/ppp/ip-up
-echo "iptables -t nat -A PREROUTING -i \$PPP_IFACE -p udp --dport 53 -j REDIRECT --to-ports \$DNS_PORT" | sudo tee -a /etc/ppp/ip-up
-echo "iptables -t nat -A PREROUTING -i \$PPP_IFACE -p tcp --syn -j REDIRECT --to-ports \$TRANS_PORT" | sudo tee -a /etc/ppp/ip-up
+echo "iptables -t nat -A PREROUTING -i ppp0 -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT" | sudo tee -a /etc/ppp/ip-up
+echo "iptables -t nat -A PREROUTING -i ppp0 -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-up
 
 # configure /etc/rc.local
 sed -i "/^\#\!.*/d" /etc/rc.local
