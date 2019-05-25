@@ -53,6 +53,7 @@ echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-down
 sudo sed -i "/^iptables/d" /etc/ppp/ip-down
 echo "iptables -t nat -D PREROUTING -i ppp0 -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT" | sudo tee -a /etc/ppp/ip-down
 echo "iptables -t nat -D PREROUTING -i ppp0 -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-down
+echo "iptables -t nat -D PREROUTING -i ppp0 -p 47 --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-down
 
 sudo sed -i "/^TRANS_PORT/d" /etc/ppp/ip-up
 sudo sed -i "/^DNS_PORT/d" /etc/ppp/ip-up
@@ -62,6 +63,8 @@ echo 'DNS_PORT="53"' | sudo tee -a /etc/ppp/ip-up
 sudo sed -i "/^iptables/d" /etc/ppp/ip-up
 echo "iptables -t nat -A PREROUTING -i ppp0 -p udp --dport 53 -j REDIRECT --to-ports $DNS_PORT" | sudo tee -a /etc/ppp/ip-up
 echo "iptables -t nat -A PREROUTING -i ppp0 -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-up
+echo "iptables -t nat -A PREROUTING -i ppp0 -p 47 --syn -j REDIRECT --to-ports $TRANS_PORT" | sudo tee -a /etc/ppp/ip-up
+
 
 # configure /etc/rc.local
 sed -i "/^\#\!.*/d" /etc/rc.local
@@ -109,8 +112,8 @@ echo "BandwidthBurst 2 GBytes" | sudo tee -a /etc/tor/torrc
 echo "MaxCircuitDirtiness 600" | sudo tee -a /etc/tor/torrc
 
 # configure /etc/dnsmasq.conf
-sudo sed -i "s/#listen-address=.*/listen-address=127.0.0.1/" /etc/dnsmasq.conf
-sudo sed -i "s/#cache-size=150/cache-size=5000/" /etc/dnsmasq.conf
+# sudo sed -i "s/#listen-address=.*/listen-address=127.0.0.1/" /etc/dnsmasq.conf
+# sudo sed -i "s/#cache-size=150/cache-size=5000/" /etc/dnsmasq.conf
 
 # configure /etc/dhcp/dhclient.conf
 sudo sed -i "s/#prepend.*/prepend domain-name-servers 127.0.0.1;/" /etc/dhcp/dhclient.conf
@@ -135,8 +138,8 @@ sudo mkdir -p /etc/debitor/conf.d/
 sudo cp debitor.conf /etc/debitor/conf.d/
 
 # solve "Temporary failure in name resolution" as desktop version is enabled
-sudo systemctl disable systemd-resolved
-sudo systemctl stop systemd-resolved
+#sudo systemctl disable systemd-resolved
+#sudo systemctl stop systemd-resolved
 
 echo
 echo "Install is completed, setting it up ..."
