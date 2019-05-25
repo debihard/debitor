@@ -35,8 +35,7 @@ sudo apt update
 sudo apt -y install tor tor-geoipdb
 
 # install related applications
-sudo apt -y install pptpd elinks pptp-linux #dnsmasq  replaces with dnscrypt
-sudo apt -y install dnscrypt-proxy
+sudo apt -y install pptpd elinks pptp-linux dnsmasq
 
 # configure PPTP
 sudo sed -i "/^localip/d" /etc/pptpd.conf
@@ -112,8 +111,8 @@ echo "BandwidthBurst 2 GBytes" | sudo tee -a /etc/tor/torrc
 echo "MaxCircuitDirtiness 600" | sudo tee -a /etc/tor/torrc
 
 # configure /etc/dnsmasq.conf
-# sudo sed -i "s/#listen-address=.*/listen-address=127.0.0.1/" /etc/dnsmasq.conf
-# sudo sed -i "s/#cache-size=150/cache-size=5000/" /etc/dnsmasq.conf
+sudo sed -i "s/#listen-address=.*/listen-address=127.0.0.1/" /etc/dnsmasq.conf
+sudo sed -i "s/#cache-size=150/cache-size=5000/" /etc/dnsmasq.conf
 
 # configure /etc/dhcp/dhclient.conf
 sudo sed -i "s/#prepend.*/prepend domain-name-servers 127.0.0.1;/" /etc/dhcp/dhclient.conf
@@ -138,8 +137,8 @@ sudo mkdir -p /etc/debitor/conf.d/
 sudo cp debitor.conf /etc/debitor/conf.d/
 
 # solve "Temporary failure in name resolution" as desktop version is enabled
-#sudo systemctl disable systemd-resolved
-#sudo systemctl stop systemd-resolved
+sudo systemctl disable systemd-resolved
+sudo systemctl stop systemd-resolved
 
 echo
 echo "Install is completed, setting it up ..."
